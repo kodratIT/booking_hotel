@@ -37,97 +37,119 @@ class BookingController extends Controller
     /**
      * Handle guest payment (no login required)
      */
-    public function createPayment(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'nama' => 'required|string|min:3',
-                'phone' => 'required|string',
-                'tanggal_lahir' => 'required|date|before:today',
-                'email' => 'required|email',
-                'gender' => 'required|string',
-                'checkin' => 'required|date|after_or_equal:today',
-                'checkout' => 'required|date|after:checkin',
-                'room_type' => 'required|string',
-                'total_amount' => 'required|numeric|min:1',
-                'duration' => 'required|integer|min:1',
-                'price_per_night' => 'required|numeric|min:1',
-            ]);
 
-            $orderId = 'BOOKING-' . time() . '-' . rand(1000, 9999);
+public function createPayment(Request $request)
+{
+    error_log('[PAYMENT] Mulai createPayment');
 
-            $booking = Pemesanan::create([
-                'kode_booking' => 'GUEST-' . strtoupper(Str::random(10)),
-                'kamar_id' => null,
-                'nomor_kamar' => null,
-                'user_id' => null,
-                'nama_pemesan' => $validated['nama'],
-                'tanggal_checkin' => $validated['checkin'],
-                'tanggal_checkout' => $validated['checkout'],
-                'jumlah_tamu' => 1,
-                'nomor_hp' => $validated['phone'],
-                'email' => $validated['email'],
-                'jenis_kelamin' => $validated['gender'],
-                'sumber' => 'Website Guest',
-                'status' => 'Menunggu Pembayaran',
-                'total_harga' => $validated['total_amount'],
+    try {
+        error_log('[PAYMENT] Validasi input dimulai');
+        $validated = $request->validate([
+            'nama' => 'required|string|min:3',
+            'phone' => 'required|string',
+            'tanggal_lahir' => 'required|date|before:today',
+            'email' => 'required|email',
+            'gender' => 'required|string',
+            'checkin' => 'required|date|after_or_equal:today',
+            'checkout' => 'required|date|after:checkin',
+            'room_type' => 'required|string',
+            'total_amount' => 'required|numeric|min:1',
+            'duration' => 'required|integer|min:1',
+            'price_per_night' => 'required|numeric|min:1',
+        ]);
+        error_log('[PAYMENT] Validasi sukses: ' . json_encode($validated));
+
+        $orderId = 'BOOKING-' . time() . '-' . rand(1000, 9999);
+        error_log("[PAYMENT] Order ID: $orderId");
+
+        $booking = Pemesanan::create([
+            'kode_booking' => 'GUEST-' . strtoupper(Str::random(10)),
+            'kamar_id' => null,
+            'nomor_kamar' => null,
+            'user_id' => null,
+            'nama_pemesan' => $validated['nama'],
+            'tanggal_checkin' => $validated['checkin'],
+            'tanggal_checkout' => $validated['checkout'],
+            'jumlah_tamu' => 1,
+            'nomor_hp' => $validated['phone'],
+            'email' => $validated['email'],
+            'tanggal_lahir' => $validated['tanggal_lahir'],
+            'jenis_kelamin' => $validated['gender'],
+            'sumber' => 'online',
+            'status' => 'lunas',
+            'total_harga' => $validated['total_amount'],
+            'order_id' => $orderId,
+        ]);
+        error_log("[PAYMENT] Booking berhasil disimpan. ID: {$booking->id}");
+
+        // Konfigurasi Midtrans
+        // Config::$serverKey = config('services.midtrans.serverKey');
+        // Config::$isProduction = config('services.midtrans.isProduction', false);
+        // Config::$isSanitized = true;
+        // Config::$is3ds = true;
+        $pricePerNight = 250000;
+        $totalAmount = $pricePerNight * $booking->duration;
+
+        // Konfigurasi Midtrans langsung
+        Config::$serverKey = 'SB-Mid-server-Qy2iNF4hQ9KpCHj1wSJcjU0G';
+        Config::$isProduction = false;
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        error_log("[PAYMENT] Midtrans dikonfigurasi - Prod: " . (Config::$isProduction ? 'YES' : 'NO'));
+
+        $params = [
+            'transaction_details' => [
                 'order_id' => $orderId,
-            ]);
+                'gross_amount' => $totalAmount, // HARUS sesuai item_details total
+            ],
+            'customer_details' => [
+                'first_name' => 'Dummy User',
+                'email' => 'dummy@example.com',
+                'phone' => '081234567890',
+            ],
+            'item_details' => [[
+                'id' => 'hotel-room-001',
+                'price' => $pricePerNight,
+                'quantity' => $validated['duration'],
+                'name' => 'Kamar Deluxe (' . $validated['duration'] . ' malam)',
+            ]],
+            'enabled_payments' => [
+                'credit_card', 'bca_va', 'bni_va', 'bri_va', 'mandiri_va',
+                'permata_va', 'other_va', 'gopay', 'shopeepay', 'indomaret', 'alfamart'
+            ],
+        ];
 
-            // Midtrans configuration
-            Config::$serverKey = config('midtrans.serverKey');
-            Config::$isProduction = config('midtrans.isProduction', false);
-            Config::$isSanitized = true;
-            Config::$is3ds = true;
+        error_log('[PAYMENT] Param Snap (dummy): ' . json_encode($params));
 
-            $params = [
-                'transaction_details' => [
-                    'order_id' => $orderId,
-                    'gross_amount' => $validated['total_amount'],
-                ],
-                'customer_details' => [
-                    'first_name' => $validated['nama'],
-                    'email' => $validated['email'],
-                    'phone' => $validated['phone'],
-                ],
-                'item_details' => [
-                    [
-                        'id' => 'hotel-room-' . time(),
-                        'price' => $validated['price_per_night'],
-                        'quantity' => $validated['duration'],
-                        'name' => $validated['room_type'] . ' (' . $validated['duration'] . ' malam)',
-                    ]
-                ],
-                'enabled_payments' => [
-                    'credit_card', 'bca_va', 'bni_va', 'bri_va', 'mandiri_va',
-                    'permata_va', 'other_va', 'gopay', 'shopeepay', 'indomaret', 'alfamart'
-                ],
-            ];
+        $snapToken = Snap::getSnapToken($params);
+        error_log('[PAYMENT] Snap Token berhasil dibuat (dummy): ' . $snapToken);
 
-            $snapToken = Snap::getSnapToken($params);
-
-            return response()->json([
-                'success' => true,
-                'snap_token' => $snapToken,
-                'booking_id' => $booking->id,
-                'order_id' => $orderId,
-                'message' => 'Token pembayaran berhasil dibuat'
-            ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data tidak valid',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('Midtrans Guest Payment Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat memproses pembayaran'
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'snap_token' => $snapToken,
+            'booking_id' => $booking->id,
+            'message' => 'Token pembayaran dummy berhasil dibuat'
+        ]);
+    } catch (\Exception $e) {
+        error_log('[PAYMENT] ERROR (dummy): ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal membuat dummy Snap Token',
+            'error' => $e->getMessage()
+        ], 500);
     }
+
+    catch (\Exception $e) {
+        error_log('[PAYMENT] ERROR: ' . $e->getMessage());
+        error_log($e->getTraceAsString());
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan saat memproses pembayaran',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
     /**
      * Booking process for logged-in users
@@ -226,10 +248,17 @@ class BookingController extends Controller
                 return response()->json([
                     'success' => true,
                     'snap_token' => $snapToken,
-                    'booking_id' => $booking->id,
+                    'order_id' => 9,
                     'message' => 'Token pembayaran berhasil dibuat'
                 ]);
             }
+            // return response()->json([
+            //     'success' => true,
+            //     'snap_token' => $snapToken,
+            //     'booking_id' => $booking->id,
+            //     'order_id' => $booking->id,
+            //     'message' => 'Token pembayaran berhasil dibuat'
+            // ]);
 
             return view('frontend.booking.snap', compact('snapToken', 'booking'));
 

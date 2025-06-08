@@ -288,13 +288,12 @@
         </div>
     </div>
 
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-uP2xW3VDkzj6fJWx"></script>
+    
     <script>
-        // Configuration
         const CONFIG = {
-            baseUrl: 'http://127.0.0.1:8000', // Ganti dengan URL backend Anda
-            snapClientKey: 'YOUR_CLIENT_KEY_HERE' // Ganti dengan client key Midtrans Anda
+            baseUrl: 'https://steze.biz.id',
         };
-
         // Form elements
         const form = document.getElementById('bookingForm');
         const payButton = document.getElementById('payButton');
@@ -485,6 +484,8 @@
                 });
 
                 const result = await response.json();
+                
+                console.log(result)
 
                 if (!response.ok) {
                     throw new Error(result.message || 'Gagal membuat pembayaran');
@@ -493,6 +494,8 @@
                 // Hide loading
                 loading.style.display = 'none';
                 payButton.disabled = false;
+                
+                bookingIdFromServer = result.booking_id;
 
                 // Open Midtrans Snap
                 if (result.snap_token) {
@@ -501,7 +504,8 @@
                             alert('Pembayaran berhasil!');
                             console.log('Payment success:', result);
                             // Redirect ke halaman success atau kirim konfirmasi ke server
-                            window.location.href = '/booking-success';
+                          // Redirect ke URL sukses dengan ID booking dari respons server
+                            window.location.href = `${CONFIG.baseUrl}/booking/sukses/${bookingIdFromServer}`;
                         },
                         onPending: function(result) {
                             alert('Pembayaran pending, silakan selesaikan pembayaran Anda.');

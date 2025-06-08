@@ -24,7 +24,7 @@ Route::get('/booking/{kamar_id}', [BookingController::class, 'form'])->name('boo
 Route::post('/booking/payment', [BookingController::class, 'payment'])->name('booking.payment');
 
 // Halaman sukses booking
-Route::get('/booking/sukses/{kode_booking}', [BookingController::class, 'success'])->name('booking.success');
+Route::get('/booking/sukses/{id}', [BookingController::class, 'success'])->name('booking.success');
 
 // Route tambahan untuk melihat detail booking
 Route::get('/booking/{id}', [BookingController::class, 'show'])->name('booking.show');
@@ -33,7 +33,6 @@ Route::get('/booking/{id}', [BookingController::class, 'show'])->name('booking.s
 Route::post('/midtrans/notification', [BookingController::class, 'midtransNotification'])->name('midtrans.notification');
 
 // ✅ FIXED: Add proper route name for create-payment
-Route::post('/api/create-payment', [BookingController::class, 'createPayment'])->name('create-payment');
 
 // Guest success page
 Route::get('/booking/guest-success/{orderId}', [BookingController::class, 'guestSuccess'])->name('booking.guest-success');

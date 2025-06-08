@@ -231,7 +231,7 @@
                 <div class="detail-item">
                     <span class="detail-label">Status:</span>
                     <span class="status-badge 
-                        @if($booking->status == 'Berhasil') status-success
+                        @if($booking->status == 'lunas') status-success
                         @elseif($booking->status == 'Menunggu Pembayaran') status-pending
                         @else status-failed
                         @endif">
@@ -329,7 +329,7 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'Berhasil') {
+            if (data.status === 'Lunas') {
                 location.reload(); // Refresh halaman jika pembayaran berhasil
             } else if (checkCount >= maxChecks) {
                 clearInterval(checkPaymentStatus);
