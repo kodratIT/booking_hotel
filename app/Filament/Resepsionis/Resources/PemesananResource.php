@@ -15,6 +15,10 @@ use Filament\Tables\Columns\SelectColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Carbon;
+use App\Models\Kamar;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Placeholder;
+
 
 class PemesananResource extends Resource
 {
@@ -101,6 +105,43 @@ class PemesananResource extends Resource
                             }
                         ])
                         ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
+
+Components\Placeholder::make('harga_placeholder')
+    ->label('Total Harga')
+    ->content(function (callable $get) {
+        $kamar = Kamar::find($get('kamar_id'));
+        $checkin = $get('tanggal_checkin');
+        $checkout = $get('tanggal_checkout');
+
+        if ($kamar && $checkin && $checkout) {
+            $lama = \Carbon\Carbon::parse($checkin)->diffInDays(\Carbon\Carbon::parse($checkout));
+            $total = $kamar->harga_per_malam * max($lama, 1);
+            return 'Rp ' . number_format($total, 0, ',', '.');
+        }
+
+        return 'Harga belum tersedia';
+    })
+    ->reactive(),
+
+
+Components\TextInput::make('total_harga')
+    ->default(0)
+    ->disabled()
+    ->dehydrated() // penting!
+    ->visible(false)
+    ->reactive()
+    ->afterStateUpdated(function (callable $set, callable $get) {
+        $kamar = Kamar::find($get('kamar_id'));
+        $checkin = $get('tanggal_checkin');
+        $checkout = $get('tanggal_checkout');
+
+        if ($kamar && $checkin && $checkout) {
+            $lama = \Carbon\Carbon::parse($checkin)->diffInDays(\Carbon\Carbon::parse($checkout));
+            $set('total_harga', $kamar->harga_per_malam * max($lama, 1));
+        } else {
+            $set('total_harga', 0);
+        }
+    }),
 
 
                     Components\TextInput::make('jumlah_tamu')
@@ -227,16 +268,30 @@ class PemesananResource extends Resource
     }
 
     
-    public static function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['user_id'] = auth()->id();
-        $data['sumber'] = 'walkin';
-        $data['status'] = 'checkin'; // status langsung checkin untuk walkin
-        $data['email'] = null;
-        $data['tanggal_checkin'] = today()->toDateString();
+protected function mutateFormDataBeforeCreate(array $data): array
+{
+    $kamar = \App\Models\Kamar::find($data['kamar_id']);
 
-        return $data;
+    $checkin = $data['tanggal_checkin'] ?? today()->toDateString();
+    $checkout = $data['tanggal_checkout'] ?? today()->addDay()->toDateString();
+
+    if ($kamar) {
+        $lamaInap = \Carbon\Carbon::parse($checkin)->diffInDays(\Carbon\Carbon::parse($checkout));
+        $data['total_harga'] = $kamar->harga_per_malam * max($lamaInap, 1);
+    } else {
+        $data['total_harga'] = 0;
     }
+
+    $data['user_id'] = auth()->id();
+    $data['sumber'] = 'walkin';
+    $data['status'] = 'checkin';
+    $data['email'] = null;
+    $data['tanggal_checkin'] = $checkin;
+
+    return $data;
+}
+
+
 
     public static function getPages(): array
     {

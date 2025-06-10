@@ -35,12 +35,11 @@ class StatsAdmin extends BaseWidget
                 ->color('success'),
 
             Stat::make('Pendapatan Hari Ini', 'Rp ' . number_format(
-                    Pembayaran::whereDate('created_at', $today)
-                        ->where('status', 'success')
-                        ->sum('amount'),
+                    Pemesanan::whereDate('created_at', $today)
+                        ->sum('total_harga'),
                     0, ',', '.'
                 ))
-                ->description('Dari semua pembayaran sukses')
+                ->description('Dari semua pemesanan hari ini')
                 ->icon('heroicon-o-banknotes')
                 ->color('success'),
 

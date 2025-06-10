@@ -64,7 +64,6 @@ public function createPayment(Request $request)
         error_log("[PAYMENT] Order ID: $orderId");
 
         $booking = Pemesanan::create([
-            'kode_booking' => 'WB-' . strtoupper(Str::random(10)),
             'kamar_id' => $validated['kamar_id'], 
             'nomor_kamar' => null,
             'user_id' => null,
