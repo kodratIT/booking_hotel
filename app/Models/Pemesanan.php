@@ -10,7 +10,7 @@ class Pemesanan extends Model
     use HasFactory;
 
     protected $fillable = [
-        'kode_booking', 'kamar_id', 'user_id', 'nomor_kamar','nama_pemesan', 'tanggal_lahir',
+        'kode_booking', 'kamar_id', 'user_id', 'nomor_kamar','nama_pemesan', 'tanggal_lahir', 'jenis_kelamin',
         'tanggal_checkin', 'tanggal_checkout', 'jumlah_tamu', 'nomor_hp',
         'email', 'sumber', 'status', 'total_harga','metode_pembayaran'
     ];

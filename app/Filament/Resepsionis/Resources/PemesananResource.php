@@ -137,8 +137,34 @@ class PemesananResource extends Resource
                         ->label('Nomor Kamar')
                         ->required()
                         ->placeholder('Masukkan nomor kamar yang diberikan')
-                        ->maxLength(10),
+                        ->maxLength(4)
+                        ->rules([
+                            function (callable $get) {
+                                return function ($attribute, $value, $fail) use ($get) {
+                                    $kamarId = $get('kamar_id');
+                                    $checkIn = $get('tanggal_checkin');
+                                    $checkOut = $get('tanggal_checkout');
 
+                                    if (!$kamarId || !$checkIn || !$checkOut || !$value) return;
+
+                                    $exists = Pemesanan::where('nomor_kamar', $value)
+                                        ->where('kamar_id', $kamarId)
+                                        ->where(function ($query) use ($checkIn, $checkOut) {
+                                            $query->whereBetween('tanggal_checkin', [$checkIn, $checkOut])
+                                                ->orWhereBetween('tanggal_checkout', [$checkIn, $checkOut])
+                                                ->orWhere(function ($q) use ($checkIn, $checkOut) {
+                                                    $q->where('tanggal_checkin', '<=', $checkIn)
+                                                        ->where('tanggal_checkout', '>=', $checkOut);
+                                                });
+                                        })
+                                        ->exists();
+
+                                    if ($exists) {
+                                        $fail('Nomor kamar sudah dipesan untuk rentang tanggal tersebut.');
+                                    }
+                                };
+                            },
+                        ]),
                 ]),
         ]);
     }
@@ -196,7 +222,8 @@ class PemesananResource extends Resource
             #->where('sumber', 'walkin') // hanya tampilkan walk-in
             ->whereHas('kamar', function ($query) {
                 $query->where('cabang_id', auth()->user()->cabang_id);
-            });
+            })
+            ->orderBy('tanggal_checkout', 'asc');
     }
 
     
