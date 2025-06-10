@@ -29,7 +29,7 @@
         }
         
         .header {
-            background: linear-gradient(45deg, #691F0C, #2E1D12);
+            background:  #691F0C;
             color: white;
             padding: 30px;
             text-align: center;
@@ -131,7 +131,7 @@
         .pay-button {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(45deg, #691F0C, #2E1D12);
+            background: #691F0C;
             color: white;
             border: none;
             border-radius: 10px;
@@ -143,7 +143,7 @@
         
         .pay-button:hover {
             transform: translateY(-2px);
-            background: linear-gradient(45deg, #2E1D12, #691F0C);
+            background:  #691F0C;
         }
         
         .pay-button:disabled {
@@ -292,7 +292,8 @@
     
     <script>
         const CONFIG = {
-            baseUrl: 'https://steze.biz.id',
+            baseUrl: 'http://127.0.0.1:8000', // Pastikan ini benar
+            snapClientKey: 'SB-Mid-client-uP2xW3VDkzj6fJWx'
         };
         // Form elements
         const form = document.getElementById('bookingForm');

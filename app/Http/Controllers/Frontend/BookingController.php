@@ -56,6 +56,7 @@ public function createPayment(Request $request)
             'total_amount' => 'required|numeric|min:1',
             'duration' => 'required|integer|min:1',
             'price_per_night' => 'required|numeric|min:1',
+            'kamar_id' => 'required|exists:kamars,id',
         ]);
         error_log('[PAYMENT] Validasi sukses: ' . json_encode($validated));
 
@@ -63,17 +64,17 @@ public function createPayment(Request $request)
         error_log("[PAYMENT] Order ID: $orderId");
 
         $booking = Pemesanan::create([
-            'kode_booking' => 'GUEST-' . strtoupper(Str::random(10)),
-            'kamar_id' => null,
+            'kode_booking' => 'WB-' . strtoupper(Str::random(10)),
+            'kamar_id' => $validated['kamar_id'], 
             'nomor_kamar' => null,
             'user_id' => null,
             'nama_pemesan' => $validated['nama'],
+            'tanggal_lahir' => $validated['tanggal_lahir'],
             'tanggal_checkin' => $validated['checkin'],
             'tanggal_checkout' => $validated['checkout'],
             'jumlah_tamu' => 1,
             'nomor_hp' => $validated['phone'],
             'email' => $validated['email'],
-            'tanggal_lahir' => $validated['tanggal_lahir'],
             'jenis_kelamin' => $validated['gender'],
             'sumber' => 'online',
             'status' => 'lunas',
@@ -101,18 +102,18 @@ public function createPayment(Request $request)
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId,
-                'gross_amount' => $totalAmount, // HARUS sesuai item_details total
+                'gross_amount' => $validated['total_amount'], // HARUS sesuai item_details total
             ],
             'customer_details' => [
-                'first_name' => 'Dummy User',
-                'email' => 'dummy@example.com',
-                'phone' => '081234567890',
+                'first_name' => $validated['nama'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
             ],
             'item_details' => [[
-                'id' => 'hotel-room-001',
-                'price' => $pricePerNight,
-                'quantity' => $validated['duration'],
-                'name' => 'Kamar Deluxe (' . $validated['duration'] . ' malam)',
+                        'id' => 'hotel-room-' . time(),
+                        'price' => $validated['price_per_night'],
+                        'quantity' => $validated['duration'],
+                        'name' => $validated['room_type'] . ' (' . $validated['duration'] . ' malam)',
             ]],
             'enabled_payments' => [
                 'credit_card', 'bca_va', 'bni_va', 'bri_va', 'mandiri_va',
@@ -131,7 +132,7 @@ public function createPayment(Request $request)
             'booking_id' => $booking->id,
             'message' => 'Token pembayaran dummy berhasil dibuat'
         ]);
-    } catch (\Exception $e) {
+    } catch (\Illuminate\Validation\ValidationException $e) {
         error_log('[PAYMENT] ERROR (dummy): ' . $e->getMessage());
         return response()->json([
             'success' => false,
