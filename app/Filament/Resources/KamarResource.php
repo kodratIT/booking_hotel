@@ -48,10 +48,11 @@ class KamarResource extends Resource
                         Select::make('tipe')
                             ->label('Tipe Kamar')
                             ->options([
-                                'Standard' => 'Standard',
-                                'Deluxe' => 'Deluxe',
-                                'Suite' => 'Suite',
-                                'Family' => 'Family',
+                                'Single' => 'Single Room',
+                                'Double' => 'Double Room',
+                                'Deluxe' => 'Deluxe Room',
+                                'Twin' => 'Twin Bed',
+                                'Family' => 'Family Room',
                             ])
                             ->required(),
 
