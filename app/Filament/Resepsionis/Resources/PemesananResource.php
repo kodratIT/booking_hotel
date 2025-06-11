@@ -148,7 +148,7 @@ Components\TextInput::make('total_harga')
                         ->label('Jumlah Tamu')
                         ->numeric()
                         ->minValue(1)
-                        ->maxValue(2)
+                        ->maxValue(3)
                         ->default(1)
                         ->required(),
 
