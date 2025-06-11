@@ -164,10 +164,11 @@ Components\TextInput::make('total_harga')
                     Components\Select::make('status')
                         ->label('Status')
                         ->options([
-                            'belum_bayar' => 'Belum Bayar',
                             'lunas' => 'Lunas',
                             'checkin' => 'Check-In',
                             'checkout' => 'Check-Out',
+                            'checkout' => 'Check-Out',
+                            'dibersihkan'   => 'Sedang Dibersihkan',
                         ])
                         ->default('checkin')
                         ->required()
