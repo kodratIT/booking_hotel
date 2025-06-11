@@ -35,7 +35,12 @@ class PemesananResource extends Resource
                         ->required()
                         ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
 
-                    Components\DatePicker::make('tanggal_lahir')
+                    Components\TextInput::make('nomor_hp')
+                        ->label('Nomor HP')
+                        ->required()
+                        ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
+
+                                        Components\DatePicker::make('tanggal_lahir')
                         ->label('Tanggal Lahir')
                         ->required()
                         ->displayFormat('d-m-Y')
@@ -44,10 +49,14 @@ class PemesananResource extends Resource
                         ->helperText('Minimal umur 17 tahun')
                         ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
 
-                    Components\TextInput::make('nomor_hp')
-                        ->label('Nomor HP')
-                        ->required()
-                        ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
+                    Components\Select::make('jenis_kelamin')
+    ->label('Jenis Kelamin')
+    ->options([
+        'laki-laki' => 'Laki-laki',
+        'perempuan' => 'Perempuan',
+    ])
+    ->required()
+    ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
 
                     Components\Hidden::make('email') // disembunyikan
                         ->default(null),
