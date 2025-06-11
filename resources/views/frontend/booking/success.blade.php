@@ -206,14 +206,14 @@
 <div class="success-container">
     <div class="success-header">
         <!--<span class="checkmark">✅</span>-->
-        <h1>Booking Berhasil!</h1>
+        <h1>Kamar Berhasil Dipesan!</h1>
         <p>Terima kasih atas kepercayaan Anda</p>
     </div>
     <div class="booking-details">
         <!-- Kode Booking -->
         <div class="booking-code">
             <h2>{{ $booking->kode_booking ?? 'BOOK-' . $booking->id }}</h2>
-            <p>Simpan kode booking ini untuk referensi Anda</p>
+            <p>Simpan kode pemesanan ini untuk referensi Anda</p>
         </div>
 
         <!-- Grid Detail -->
@@ -253,7 +253,7 @@
 
             <!-- Detail Booking -->
             <div class="detail-section">
-                <h3>Detail Booking</h3>
+                <h3>Detail Pemesanan</h3>
                 <div class="detail-item">
                     <span class="detail-label">Check-in:</span>
                     <span class="detail-value">{{ \Carbon\Carbon::parse($booking->tanggal_checkin)->format('d M Y') }}</span>
@@ -271,7 +271,7 @@
                 @if($booking->kamar)
                 <div class="detail-item">
                     <span class="detail-label">Kamar:</span>
-                    <span class="detail-value">{{ $booking->kamar->nama_kamar }}</span>
+                    <span class="detail-value">{{ $booking->kamar->tipe }}</span>
                 </div>
                 @endif
                 <div class="detail-item">
@@ -287,7 +287,7 @@
         <div class="important-note">
             <h4>Informasi Penting:</h4>
             <ul>
-                <li><strong>Simpan kode booking</strong> untuk check-in di hotel</li>
+                <li><strong>Simpan kode pemesanan anda</strong> untuk check-in di hotel</li>
                 <li><strong>Check-in:</strong> 14:00 WIB | <strong>Check-out:</strong> 12:00 WIB</li>
                 @if($booking->status == 'Menunggu Pembayaran')
                 <li style="color: #856404;"><strong>Harap selesaikan pembayaran</strong> dalam 24 jam</li>
