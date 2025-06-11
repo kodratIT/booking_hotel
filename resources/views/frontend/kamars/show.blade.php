@@ -92,7 +92,7 @@
     {{-- Harga per malam --}}
     <p class="harga">Rp {{ number_format($kamar->harga_per_malam, 0, ',', '.') }} / kamar / malam</p>
     <a href="{{ route('booking.form', $kamar->id) }}" class="btn-booking">Pilih Kamar</a>
-    <p class="deskripsi-kamar">{{ \Illuminate\Support\Str::limit($kamar->deskripsi, 100) }}</p>
+    <p class="deskripsi-kamar">{{ $kamar->deskripsi }}</p>
     <h4 style="margin-top: 40px;">Fasilitas</h4>
     <div class="fasilitas-kamar">
         @foreach($kamar->fasilitas as $fasilitas)
