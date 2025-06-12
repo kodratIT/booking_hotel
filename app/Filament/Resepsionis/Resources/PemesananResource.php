@@ -49,14 +49,15 @@ class PemesananResource extends Resource
                         ->helperText('Minimal umur 17 tahun')
                         ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
 
-                    Components\Select::make('jenis_kelamin')
+Components\Select::make('jenis_kelamin')
     ->label('Jenis Kelamin')
     ->options([
         'laki-laki' => 'Laki-laki',
         'perempuan' => 'Perempuan',
     ])
     ->required()
-    ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
+    ->dehydrated(fn ($livewire) => !($livewire instanceof EditRecord)),
+
 
                     Components\Hidden::make('email') // disembunyikan
                         ->default(null),
@@ -76,7 +77,7 @@ class PemesananResource extends Resource
 
             Components\DatePicker::make('tanggal_checkin')
                         ->label('Tanggal Check-In')
-                        ->default(today())
+
                         ->required()
                         ->displayFormat('d-m-Y')
                         ->minDate(today()) // Hanya tanggal, bukan waktu
@@ -84,6 +85,7 @@ class PemesananResource extends Resource
                         ->disabled()
                         ->helperText('Check-In hanya untuk hari ini')
                         ->reactive()
+                        ->dehydrated(fn ($livewire) => !($livewire instanceof EditRecord))
                         ->disabled(fn ($livewire) => $livewire instanceof EditRecord),
 
             Components\DatePicker::make('tanggal_checkout')
@@ -189,33 +191,7 @@ Components\TextInput::make('total_harga')
                         ->required()
                         ->placeholder('Masukkan nomor kamar yang diberikan')
                         ->maxLength(4)
-                        ->rules([
-                            function (callable $get) {
-                                return function ($attribute, $value, $fail) use ($get) {
-                                    $kamarId = $get('kamar_id');
-                                    $checkIn = $get('tanggal_checkin');
-                                    $checkOut = $get('tanggal_checkout');
-
-                                    if (!$kamarId || !$checkIn || !$checkOut || !$value) return;
-
-                                    $exists = Pemesanan::where('nomor_kamar', $value)
-                                        ->where('kamar_id', $kamarId)
-                                        ->where(function ($query) use ($checkIn, $checkOut) {
-                                            $query->whereBetween('tanggal_checkin', [$checkIn, $checkOut])
-                                                ->orWhereBetween('tanggal_checkout', [$checkIn, $checkOut])
-                                                ->orWhere(function ($q) use ($checkIn, $checkOut) {
-                                                    $q->where('tanggal_checkin', '<=', $checkIn)
-                                                        ->where('tanggal_checkout', '>=', $checkOut);
-                                                });
-                                        })
-                                        ->exists();
-
-                                    if ($exists) {
-                                        $fail('Nomor kamar sudah dipesan untuk rentang tanggal tersebut.');
-                                    }
-                                };
-                            },
-                        ]),
+                        
                 ]),
         ]);
     }
